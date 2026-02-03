@@ -12,15 +12,15 @@
 # define _GNU_SOURCE
 #endif  /* __linux */
 
-#if defined(_MSC_VER) && _MSC_VER < 1600
-/* stdint.h not available in Visual Studio < 2010 */
-typedef __int8 int8_t;
-typedef unsigned __int8 uint8_t;
-typedef __int16 int16_t;
-typedef unsigned __int16 uint16_t;
-typedef __int32 int32_t;
-typedef unsigned __int32 uint32_t;
-typedef __int64 int64_t;
+#ifdef _MSC_VER
+/* Use Windows types for MSVC instead of stdint.h to avoid include path issues */
+typedef signed char int8_t;
+typedef unsigned char uint8_t;
+typedef signed short int16_t;
+typedef unsigned short uint16_t;
+typedef signed int int32_t;
+typedef unsigned int uint32_t;
+typedef signed __int64 int64_t;
 typedef unsigned __int64 uint64_t;
 #else
 #include <stdint.h>
