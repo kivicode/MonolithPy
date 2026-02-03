@@ -37,6 +37,30 @@ typedef struct FDMAP_S FDMAP;
 FDMAP mp_fd2file[512] = {};
 bool mp_fd2file_initialized = false;
 
+#ifdef __APPLE__
+// Standard stream wrappers for macOS
+static EFILE mp_stdin_efile = {EHANDLE_NATIVE, NULL, NULL, NULL, 0, 0, NULL, NULL};
+static EFILE mp_stdout_efile = {EHANDLE_NATIVE, NULL, NULL, NULL, 0, 0, NULL, NULL};
+static EFILE mp_stderr_efile = {EHANDLE_NATIVE, NULL, NULL, NULL, 0, 0, NULL, NULL};
+
+// Export pointers to the wrappers
+EFILE *mp_stdin_wrap = &mp_stdin_efile;
+EFILE *mp_stdout_wrap = &mp_stdout_efile;
+EFILE *mp_stderr_wrap = &mp_stderr_efile;
+
+// Forward declare the original macOS streams
+extern FILE *__stdinp;
+extern FILE *__stdoutp;
+extern FILE *__stderrp;
+
+// Static initializer to set up the wrappers
+static void __attribute__((constructor)) mp_init_std_streams(void) {
+    mp_stdin_efile.f = __stdinp;
+    mp_stdout_efile.f = __stdoutp;
+    mp_stderr_efile.f = __stderrp;
+}
+#endif  /* __APPLE__ */
+
 #ifdef _WIN32
 // A map to associate mapping HANDLEs with our virtual EFILE structs.
 struct VMAP_S {   // Virtual File Mapping

@@ -12,7 +12,19 @@
 # define _GNU_SOURCE
 #endif  /* __linux */
 
+#if defined(_MSC_VER) && _MSC_VER < 1600
+/* stdint.h not available in Visual Studio < 2010 */
+typedef __int8 int8_t;
+typedef unsigned __int8 uint8_t;
+typedef __int16 int16_t;
+typedef unsigned __int16 uint16_t;
+typedef __int32 int32_t;
+typedef unsigned __int32 uint32_t;
+typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+#else
 #include <stdint.h>
+#endif
 
 #ifdef FOPEN_MAX
 // This means that we were loaded too late so we can't intercept the necessary calls.
@@ -947,6 +959,17 @@ extern EFILE *stdin;		/* Standard input stream.  */
 extern EFILE *stdout;		/* Standard output stream.  */
 extern EFILE *stderr;		/* Standard error output stream.  */
 #endif  /* __linux */
+
+#ifdef __APPLE__
+/* On macOS, stdin/stdout/stderr are macros. We need to wrap them. */
+extern EFILE *mp_stdin_wrap;
+extern EFILE *mp_stdout_wrap;
+extern EFILE *mp_stderr_wrap;
+/* Redefine the standard stream macros to use our wrappers */
+#define stdin mp_stdin_wrap
+#define stdout mp_stdout_wrap
+#define stderr mp_stderr_wrap
+#endif  /* __APPLE__ */
 
 /* File Opening and Closing */
 ALWAYS_INLINE MP_DECL(EFILE*) fopen(const char* file, const char* mode) {

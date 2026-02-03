@@ -185,7 +185,7 @@ unicodedata unicodedata.c
 # Modules with some UNIX dependencies
 
 _posixsubprocess _posixsubprocess.c
-_posixshmem -I$(srcdir)/Modules/_multiprocessing _multiprocessing/posixshmem.c -lrt
+_posixshmem -I$(srcdir)/Modules/_multiprocessing _multiprocessing/posixshmem.c
 fcntl fcntlmodule.c
 grp grpmodule.c
 resource resource.c
@@ -194,26 +194,26 @@ termios termios.c
 
 # Modules that require external libraries.
 
-_bz2 _bz2module.c -l:libbz2.a
-_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c -ldl -l:libffi.a -DHAVE_FFI_PREP_CIF_VAR -DHAVE_FFI_PREP_CLOSURE_LOC -DHAVE_FFI_CLOSURE_ALLOC
+_bz2 _bz2module.c -lbz2
+_ctypes _ctypes/_ctypes.c _ctypes/callbacks.c _ctypes/callproc.c _ctypes/stgdict.c _ctypes/cfield.c -ldl -lffi -DHAVE_FFI_PREP_CIF_VAR -DHAVE_FFI_PREP_CLOSURE_LOC -DHAVE_FFI_CLOSURE_ALLOC
 # The _dbm module supports NDBM, GDBM with compat module, and Berkeley DB.
 #_dbm _dbmmodule.c -l:libgdbm_compat.a -DUSE_GDBM_COMPAT
-#_gdbm _gdbmmodule.c -l:libgdbm.a
-_lzma _lzmamodule.c -l:liblzma.a
-_uuid _uuidmodule.c -l:libuuid.a
-zlib  zlibmodule.c -l:libz.a
+#_gdbm _gdbmmodule.c -lgdbm
+_lzma _lzmamodule.c -llzma
+#_uuid _uuidmodule.c -luuid
+zlib  zlibmodule.c -lz
 
 # The readline module also supports libeditline (-leditline).
 # Some systems may require -ltermcap or -ltermlib.
-#readline readline.c -l:libeditline.a -DWITH_EDITLINE
+#readline readline.c -leditline -DWITH_EDITLINE
 
 # OpenSSL bindings
 #_ssl _ssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) $(OPENSSL_LIBS)
 #_hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) -lcrypto
 
 # To statically link OpenSSL:
-_ssl _ssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) -l:libssl.a -l:libcrypto.a
-_hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) -l:libcrypto.a
+_ssl _ssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) -lssl -lcrypto
+_hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) -lcrypto
 
 # The _tkinter module.
 #
@@ -226,14 +226,15 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) -l:libcrypto.a
 # done by the shell's "read" command and it may not be implemented on
 # every system.
 
-_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT $(TCLTK_INCLUDES) $(TCLTK_LIBS) -l:libtk8.6.a -l:libtcl8.6.a -l:libX11.a -l:libxcb.a -l:libXss.a -l:libfontconfig.a -l:libXft.a -l:libXext.a -l:libXrandr.a -l:libXau.a -l:libXrender.a -l:libXdmcp.a -l:libfreetype.a -l:libexpat.a -l:libpng.a -l:libharfbuzz.a -l:libX11.a -l:libxcb.a
+# *** Always uncomment this (leave the leading underscore in!):
+_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT $(TCLTK_INCLUDES) $(TCLTK_LIBS) -ltk8.6 -ltcl8.6 -framework Cocoa -framework Carbon -framework IOKit -framework QuartzCore -framework CoreServices -framework CoreFoundation -framework ApplicationServices -framework UniformTypeIdentifiers
 
 # Some system have -lcurses
-_curses -l:libncursesw.a _cursesmodule.c
-_curses_panel -l:libpanelw.a -l:libncursesw.a _curses_panel.c
+_curses -lncursesw _cursesmodule.c
+_curses_panel -lpanelw -lncursesw _curses_panel.c
 
 # macOS specific module, needs SystemConfiguration and CoreFoundation framework
-# _scproxy _scproxy.c
+_scproxy _scproxy.c
 
 # Examples
 

@@ -10,6 +10,10 @@
 #ifdef _BSD_WCHAR_T_DEFINED_
 #define _WCHAR_T
 #endif
+/* Enable wide character support in ncurses */
+#ifndef _XOPEN_SOURCE_EXTENDED
+#define _XOPEN_SOURCE_EXTENDED 1
+#endif
 #endif /* __APPLE__ */
 
 /* On FreeBSD, [n]curses.h and stdlib.h/wchar.h use different guards
