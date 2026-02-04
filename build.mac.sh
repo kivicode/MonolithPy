@@ -235,17 +235,20 @@ make install
 cd ..
 fi
 
-if [ ! -d tcl8.6.15 ]; then
-download_file http://downloads.sourceforge.net/project/tcl/Tcl/8.6.15/tcl8.6.15-src.tar.gz tcl.tar.gz
-tar -xf tcl.tar.gz
-cd tcl8.6.15
-rm -rf pkgs/tdbc* pkgs/sqlite*
-cd unix
-./configure --prefix=${PREFIX} --enable-shared=no --enable-threads
-make -j$(sysctl -n hw.ncpu)
-make install
-cd ../..
-fi
+# Skip building Tcl - use system frameworks instead for better macOS compatibility
+# if [ ! -d tcl8.6.15 ]; then
+# download_file http://downloads.sourceforge.net/project/tcl/Tcl/8.6.15/tcl8.6.15-src.tar.gz tcl.tar.gz
+# tar -xf tcl.tar.gz
+# cd tcl8.6.15
+# rm -rf pkgs/tdbc* pkgs/sqlite*
+# cd unix
+# # Build as shared library - Aqua Tk requires shared linking
+# ./configure --prefix=${PREFIX} --enable-shared --enable-threads
+# make -j$(sysctl -n hw.ncpu)
+# make install
+# cd ../..
+# fi
+echo "Skipping Tcl build - using system frameworks"
 
 if [ ! -d expat-2.5.0 ]; then
 download_file https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.gz expat.tar.gz
@@ -257,15 +260,23 @@ make install
 cd ..
 fi
 
-if [ ! -d tk8.6.15 ]; then
-download_file http://downloads.sourceforge.net/project/tcl/Tcl/8.6.15/tk8.6.15-src.tar.gz tk.tar.gz
-tar -xf tk.tar.gz
-cd tk8.6.15/unix
-./configure --prefix=${PREFIX} --enable-shared=no --enable-threads --with-tcl=${PREFIX}/lib --enable-aqua
-make -j$(sysctl -n hw.ncpu)
-make install
-cd ../..
-fi
+# Skip building Tk - use system frameworks instead for better macOS compatibility
+# if [ ! -d tk8.6.15 ]; then
+# download_file http://downloads.sourceforge.net/project/tcl/Tcl/8.6.15/tk8.6.15-src.tar.gz tk.tar.gz
+# tar -xf tk.tar.gz
+# cd tk8.6.15
+# # Apply patch for modern macOS Aqua compatibility
+# if [ -f ../tk-aqua-fix.patch ]; then
+#     patch -p1 < ../tk-aqua-fix.patch || echo "Patch already applied or failed"
+# fi
+# cd unix
+# # Build as shared library - Aqua Tk requires shared linking
+# ./configure --prefix=${PREFIX} --enable-shared --enable-threads --with-tcl=${PREFIX}/lib --enable-aqua
+# make -j$(sysctl -n hw.ncpu)
+# make install
+# cd ../..
+# fi
+echo "Skipping Tk build - using system frameworks"
 
 if [ ! -d mpdecimal-4.0.0 ]; then
 download_file https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-4.0.0.tar.gz mpdecimal.tar.gz
@@ -321,6 +332,28 @@ make -j $(sysctl -n hw.ncpu) \
 # Delayed deletion of old installation, to avoid having it not there for testing purposes
 # while compiling, which is slow due to PGO beign applied.
 $ELEVATE rm -rf "$target" && $ELEVATE make libinstall install
+
+# Bundle Homebrew Tcl/Tk libraries for Tkinter
+echo "Bundling Homebrew Tcl/Tk libraries..."
+$ELEVATE mkdir -p "$target/lib"
+if [ -f "/opt/homebrew/opt/tcl-tk/lib/libtcl8.6.dylib" ]; then
+    echo "Copying Tcl/Tk dylibs..."
+    $ELEVATE cp -a /opt/homebrew/opt/tcl-tk/lib/libtcl8.6.dylib "$target/lib/" || true
+    $ELEVATE cp -a /opt/homebrew/opt/tcl-tk/lib/libtk8.6.dylib "$target/lib/" || true
+
+    # Fix rpaths in the python binary so it can find the bundled libraries
+    if [ -f "$target/bin/python3.13" ]; then
+        echo "Fixing rpaths for python3.13 binary..."
+        $ELEVATE install_name_tool -add_rpath "@loader_path/../lib" "$target/bin/python3.13" 2>/dev/null || true
+    fi
+
+    echo "Tcl/Tk libraries bundled successfully"
+    $ELEVATE ls -lh "$target/lib/"libt*.dylib
+else
+    echo "Warning: Homebrew tcl-tk not found at /opt/homebrew/opt/tcl-tk"
+    echo "Install with: brew install tcl-tk"
+    echo "Tkinter may not work without it!"
+fi
 
 rm pybuilddir.txt
 

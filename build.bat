@@ -39,6 +39,16 @@ if NOT DEFINED PYTHON (
 
 %PYTHON% Lib\mkembeddata.py Embedded Embedded\embed_data
 
+rem Verify Tcl/Tk externals are downloaded
+echo Checking Tcl/Tk externals...
+if not exist externals\tcltk-8.6.15.0\amd64\lib\tcl86t.lib (
+    echo ERROR: Tcl/Tk externals are incomplete or missing!
+    echo Running get_externals to download them...
+    cd PCbuild
+    call get_externals.bat
+    cd ..
+)
+
 cl /c /Zi /FoEmbedded\mp_embed.obj Embedded\mp_embed.c /IInclude
 cl /c /FoEmbedded\mp_embed_data.obj Embedded\mp_embed_data.c
 

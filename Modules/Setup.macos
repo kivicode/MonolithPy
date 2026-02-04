@@ -227,7 +227,8 @@ _hashlib _hashopenssl.c $(OPENSSL_INCLUDES) $(OPENSSL_LDFLAGS) -lcrypto
 # every system.
 
 # *** Always uncomment this (leave the leading underscore in!):
-_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT $(TCLTK_INCLUDES) $(TCLTK_LIBS) -ltk8.6 -ltcl8.6 -framework Cocoa -framework Carbon -framework IOKit -framework QuartzCore -framework CoreServices -framework CoreFoundation -framework ApplicationServices -framework UniformTypeIdentifiers
+# Use Homebrew's Tcl/Tk which works properly on modern macOS
+_tkinter _tkinter.c tkappinit.c -DWITH_APPINIT -I/opt/homebrew/opt/tcl-tk/include -L/opt/homebrew/opt/tcl-tk/lib -ltcl8.6 -ltk8.6 -framework Cocoa -framework Carbon -framework IOKit -framework QuartzCore -framework CoreServices -framework CoreFoundation -framework ApplicationServices -framework UniformTypeIdentifiers
 
 # Some system have -lcurses
 _curses -lncursesw _cursesmodule.c
